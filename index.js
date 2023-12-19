@@ -1,3 +1,4 @@
+require('dotenv').config();
 // import bodyParser from 'body-parser';
 import express from 'express';
 // import cors from 'cors';
@@ -6,7 +7,6 @@ import filesService, { uploadPDF } from './api/files-service.js';
 
 const __dirname = path.resolve();
 const port = 3002;
-
 /// express setup
 const app = express();
 // app.use(cors());

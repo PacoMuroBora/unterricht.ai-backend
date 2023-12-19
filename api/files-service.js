@@ -7,6 +7,9 @@ import {
   RecursiveCharacterTextSplitter,
   CharacterTextSplitter,
 } from 'langchain/text_splitter';
+import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { supabaseClient } from '../utils/supabase.js';
 
 const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
 
@@ -65,13 +68,18 @@ export async function uploadPDF(path) {
 
   const output = await loader.loadAndSplit(
     new CharacterTextSplitter({
-      separator: '. ',
+      separator: '. ', // TODO better separator?
       chunkSize: 2500,
       chunkOverlap: 200,
     })
   );
 
-  console.log(output);
+  const supa = await SupabaseVectorStore.fromDocuments(
+    output,
+    new OpenAIEmbeddings({ openAIApiKey }),
+    { client: supabaseClient, tableName: 'documents' }
+  );
+  console.log(supa);
 }
 
 export default router;
