@@ -1,0 +1,37 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+!src/assets/static/translations/README.md
+src/assets/static/translations/*
+src/assets/static/collectablesMetadata.json
+src/assets/static/vouchersMetadata.json
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+
+public/assets
+import/*
+
+/cypress/videos/
+/cypress/screenshots/
+
+tmp/
+
+# Editor directories and files
+.vscode/*
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
