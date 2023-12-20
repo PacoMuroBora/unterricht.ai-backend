@@ -37,7 +37,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     if (mimetype === 'text/plain') {
       await uploadText(path);
     } else if (mimetype === 'application/pdf') {
-      await uploadPDF(path);
+      await uploadPDF(path, 'documents_2');
     }
 
     // Remove the uploaded file
@@ -62,25 +62,29 @@ async function uploadText(path) {
   const docOutput = await splitter.splitDocuments([doc]);
 }
 
-export async function uploadPDF(path) {
-  const loader = new PDFLoader(path, {
-    splitPages: false,
-  });
+export async function uploadPDF(path, tableName = 'documents') {
+  try {
+    const loader = new PDFLoader(path, {
+      splitPages: false,
+    });
 
-  const output = await loader.loadAndSplit(
-    new CharacterTextSplitter({
-      separator: '. ', // TODO better separator?
-      chunkSize: 2500,
-      chunkOverlap: 200,
-    })
-  );
+    const output = await loader.loadAndSplit(
+      new CharacterTextSplitter({
+        separator: '. ', // TODO better separator?
+        chunkSize: 2500,
+        chunkOverlap: 200,
+      })
+    );
 
-  const supa = await SupabaseVectorStore.fromDocuments(
-    output,
-    new OpenAIEmbeddings({ openAIApiKey }),
-    { client: supabaseClient, tableName: 'documents' }
-  );
-  console.log(supa);
+    await SupabaseVectorStore.fromDocuments(
+      output,
+      new OpenAIEmbeddings({ openAIApiKey }),
+      { client: supabaseClient, tableName }
+    );
+    console.log(supa);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export default router;
