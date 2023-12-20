@@ -10,6 +10,7 @@ import {
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { supabaseClient } from '../utils/supabase.js';
+import { openAIApiKey } from '../utils/config.js';
 
 const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
 
