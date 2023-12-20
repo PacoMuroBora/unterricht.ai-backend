@@ -19,6 +19,7 @@ app.use(
     extended: true,
   })
 );
+app.use(express.json());
 
 /// serve client
 app.use(express.static(path.join(__dirname, 'public')));

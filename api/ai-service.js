@@ -15,6 +15,8 @@ const llm = new ChatOpenAI({ openAIApiKey, temperature: 1 });
 
 router.post('/prompt', async (req, res) => {
   const { prompt } = req.body;
+
+  console.log('promp', prompt);
   const response = await getAnswer(prompt);
   res.json({ response });
 });
@@ -26,6 +28,7 @@ router.post('/prompt', async (req, res) => {
  * @return {Promise<any>} - A Promise that resolves to the answer to the question.
  */
 export async function getAnswer(question) {
+  console.log('question', question);
   const chain = RunnableSequence.from([
     {
       standaloneQuestion: async ({ question }) =>
@@ -40,7 +43,8 @@ export async function getAnswer(question) {
       context: async ({ standaloneQuestion }) =>
         await getRelevanContext(standaloneQuestion),
       originalQuestion: ({ originalInput }) => originalInput.question,
-      standaloneQuestion: ({ standaloneQuestion }) => standaloneQuestion,
+      standaloneQuestion: ({ standaloneQuestion }) =>
+        standaloneQuestion,
     },
     (output) => {
       console.log(output);
@@ -62,8 +66,8 @@ export async function getAnswer(question) {
  * @return {Promise<string>} - The converted standalone question.
  */
 export async function getStandaloneQuestion(question) {
-  const standaloneQuestionTemplate = `Given a question, convert it to a standalone question.
-    question: {question} standalone question:`;
+  const standaloneQuestionTemplate = `Eine Frage in eine eigenständige Frage umwandeln.
+    Frage: {question} eigenständige Frage:`;
 
   const standaloneQuestionPrompt = PromptTemplate.fromTemplate(
     standaloneQuestionTemplate
@@ -87,7 +91,10 @@ export async function getStandaloneQuestion(question) {
  * @return {type} the result of invoking the retriever chain with the standalone question
  */
 export async function getRelevanContext(standaloneQuestion) {
-  const retrieverChain = RunnableSequence.from([retriever, combineDocuments]);
+  const retrieverChain = RunnableSequence.from([
+    retriever,
+    combineDocuments,
+  ]);
 
   return await retrieverChain.invoke(standaloneQuestion);
 }
@@ -106,15 +113,14 @@ export async function getContextualAnswer({
   standaloneQuestion,
   context,
 }) {
-  const answerTemplate = `You are a school teacher planning and coordination assistant.
-  You will aid teachers with questions about planning and coordinating lessons given their set of requirements based on
-  teaching style, region, subjects, students and time. Don't try to make up an answer and refer to
-  the master "Civan" if you can't give a clear definete answer.
-  Focus on the standalone question but consider the original question too. A basic pedagogic context is provided.
-  context: {context}
-  original question: {originalQuestion}
-  standalone question: {standaloneQuestion}
-  answer:`;
+  const answerTemplate = `Sie sind Assistent/in für Unterrichtsplanung und -koordination.
+  Sie helfen den Lehrern bei Fragen zur Planung und Koordinierung des Unterrichts unter Berücksichtigung ihrer Anforderungen in Bezug auf
+  Unterrichtsstil, Region, Fächer, Schüler und Zeit. Versuchen Sie nicht, sich eine Antwort auszudenken wenn Sie keine eindeutige Antwort geben können.
+  Konzentrieren Sie sich auf die eigenständige Frage, aber berücksichtigen Sie auch die ursprüngliche Frage. Ein grundlegender pädagogischer Kontext ist gegeben.
+  Kontext: {context}
+  Originalfrage: {originalQuestion}
+  Eigenständige Frage: {standaloneQuestion}
+  Antwort:`;
 
   const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
 
