@@ -85,8 +85,8 @@ export async function uploadPDF(path, tableName = 'documents') {
     const output = await loader.loadAndSplit(
       new CharacterTextSplitter({
         separator: '. ', // TODO better separator?
-        chunkSize: 2500,
-        chunkOverlap: 200,
+        chunkSize: 1000,
+        chunkOverlap: 100,
       })
     );
 
