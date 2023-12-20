@@ -1,5 +1,4 @@
 import express from 'express';
-import { OpenAI } from 'langchain/llms/openai';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { PromptTemplate } from 'langchain/prompts';
 import { openAIApiKey } from '../utils/config.js';
@@ -33,11 +32,19 @@ export async function getAnswer(question) {
         await getStandaloneQuestion(question),
       originalInput: new RunnablePassthrough(),
     },
+    (output) => {
+      console.log(output);
+      return output;
+    },
     {
       context: async ({ standaloneQuestion }) =>
         await getRelevanContext(standaloneQuestion),
       originalQuestion: ({ originalInput }) => originalInput.question,
       standaloneQuestion: ({ standaloneQuestion }) => standaloneQuestion,
+    },
+    (output) => {
+      console.log(output);
+      return output;
     },
     getContextualAnswer,
   ]);
