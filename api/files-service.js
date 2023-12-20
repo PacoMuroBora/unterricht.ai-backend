@@ -55,11 +55,25 @@ const splitter = new RecursiveCharacterTextSplitter({
   chunkOverlap: 50,
 });
 
-async function uploadText(path) {
-  const loader = new TextLoader(path);
-  const doc = await loader.load();
-
-  const docOutput = await splitter.splitDocuments([doc]);
+async function uploadText(path, tableName = 'documents') {
+  try {
+    const loader = new TextLoader(path);
+    const output = await loader.loadAndSplit(
+      new CharacterTextSplitter({
+        separator: ['\n\n', '\n', '. ', ' '],
+        chunkSize: 1000,
+        chunkOverlap: 100,
+      })
+    );
+    const supa = await SupabaseVectorStore.fromDocuments(
+      output,
+      new OpenAIEmbeddings({ openAIApiKey }),
+      { client: supabaseClient, tableName }
+    );
+    console.log(supa);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export async function uploadPDF(path, tableName = 'documents') {
@@ -76,7 +90,7 @@ export async function uploadPDF(path, tableName = 'documents') {
       })
     );
 
-    await SupabaseVectorStore.fromDocuments(
+    const supa = await SupabaseVectorStore.fromDocuments(
       output,
       new OpenAIEmbeddings({ openAIApiKey }),
       { client: supabaseClient, tableName }
