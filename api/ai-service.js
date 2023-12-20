@@ -20,6 +20,12 @@ router.post('/prompt', async (req, res) => {
   res.json({ response });
 });
 
+/**
+ * Retrieves the answer to a given question.
+ *
+ * @param {string} question - The question to be answered.
+ * @return {Promise<any>} - A Promise that resolves to the answer to the question.
+ */
 export async function getAnswer(question) {
   const chain = RunnableSequence.from([
     {
@@ -42,6 +48,12 @@ export async function getAnswer(question) {
   return response;
 }
 
+/**
+ * Converts a given question into a standalone question.
+ *
+ * @param {string} question - The question to be converted.
+ * @return {Promise<string>} - The converted standalone question.
+ */
 export async function getStandaloneQuestion(question) {
   const standaloneQuestionTemplate = `Given a question, convert it to a standalone question.
     question: {question} standalone question:`;
@@ -61,12 +73,27 @@ export async function getStandaloneQuestion(question) {
   });
 }
 
+/**
+ * Generates the function comment for the given function body.
+ *
+ * @param {type} standaloneQuestion - the standalone question to be passed to the retriever chain
+ * @return {type} the result of invoking the retriever chain with the standalone question
+ */
 export async function getRelevanContext(standaloneQuestion) {
   const retrieverChain = RunnableSequence.from([retriever, combineDocuments]);
 
   return await retrieverChain.invoke(standaloneQuestion);
 }
 
+/**
+ * Retrieves a contextual answer based on the original question, standalone question, and context.
+ *
+ * @param {Object} options - The options object.
+ * @param {string} options.originalQuestion - The original question.
+ * @param {string} options.standaloneQuestion - The standalone question.
+ * @param {Object} options.context - The pedagogic context.
+ * @return {Promise<string>} The contextual answer.
+ */
 export async function getContextualAnswer({
   originalQuestion,
   standaloneQuestion,
