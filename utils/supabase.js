@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai.js';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { sbApiKey, sbUrl, openAIApiKey } from './config.js';
 
 export const supabaseClient = createClient(sbUrl, sbApiKey);

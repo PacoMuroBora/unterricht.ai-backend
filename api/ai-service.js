@@ -4,8 +4,11 @@ import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { PromptTemplate } from 'langchain/prompts';
 import { openAIApiKey } from '../utils/config.js';
 import { retriever } from '../utils/supabase.js';
-import { RunnableSequence } from 'langchain/schema/runnable';
-import { StringOutpitParser } from 'langchain/schema/output_parser';
+import {
+  RunnableSequence,
+  RunnablePassthrough,
+} from 'langchain/schema/runnable';
+import { StringOutputParser } from 'langchain/schema/output_parser';
 
 const router = express.Router();
 
@@ -13,15 +16,30 @@ const llm = new ChatOpenAI({ openAIApiKey, temperature: 1 });
 
 router.post('/prompt', async (req, res) => {
   const { prompt } = req.body;
-  const model = new OpenAI();
-  const response = await model.call(prompt);
+  const response = await getAnswer(prompt);
   res.json({ response });
 });
 
 export async function getAnswer(question) {
-  const chain = RunnableSequence.from([]);
+  const chain = RunnableSequence.from([
+    {
+      standaloneQuestion: async ({ question }) =>
+        await getStandaloneQuestion(question),
+      originalInput: new RunnablePassthrough(),
+    },
+    {
+      context: async ({ standaloneQuestion }) =>
+        await getRelevanContext(standaloneQuestion),
+      originalQuestion: ({ originalInput }) => originalInput.question,
+      standaloneQuestion: ({ standaloneQuestion }) => standaloneQuestion,
+    },
+    getContextualAnswer,
+  ]);
 
-  chain.invoke({ question });
+  const response = await chain.invoke({ question });
+
+  console.log(response);
+  return response;
 }
 
 export async function getStandaloneQuestion(question) {
@@ -32,25 +50,51 @@ export async function getStandaloneQuestion(question) {
     standaloneQuestionTemplate
   );
 
-  const standaloneQuestionChain = standaloneQuestionPrompt.pipe(llm);
+  const standaloneChain = RunnableSequence.from([
+    standaloneQuestionPrompt,
+    llm,
+    new StringOutputParser(),
+  ]);
 
-  const response = await standaloneQuestionChain.invoke({
+  return await standaloneChain.invoke({
     question,
   });
-
-  return response;
 }
 
-export async function getContextOnlyAnswer() {
+export async function getRelevanContext(standaloneQuestion) {
+  const retrieverChain = RunnableSequence.from([retriever, combineDocuments]);
+
+  return await retrieverChain.invoke(standaloneQuestion);
+}
+
+export async function getContextualAnswer({
+  originalQuestion,
+  standaloneQuestion,
+  context,
+}) {
   const answerTemplate = `You are a school teacher planning and coordination assistant.
   You will aid teachers with questions about planning and coordinating lessons given their set of requirements based on
   teaching style, region, subjects, students and time. Don't try to make up an answer and refer to
-  the master "Civan" if you can't give a clear definete answer. A basic pedagogic context is provided.
+  the master "Civan" if you can't give a clear definete answer.
+  Focus on the standalone question but consider the original question too. A basic pedagogic context is provided.
   context: {context}
-  question: {question}
+  original question: {originalQuestion}
+  standalone question: {standaloneQuestion}
   answer:`;
 
   const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
+
+  const chain = RunnableSequence.from([
+    answerPrompt,
+    llm,
+    new StringOutputParser(),
+  ]);
+
+  return await chain.invoke({
+    originalQuestion,
+    standaloneQuestion,
+    context,
+  });
 }
 
 function combineDocuments(docs) {
