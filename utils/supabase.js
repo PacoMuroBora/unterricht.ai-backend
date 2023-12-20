@@ -8,7 +8,7 @@ export const supabaseClient = createClient(sbUrl, sbApiKey);
 const embeddings = new OpenAIEmbeddings({ openAIApiKey });
 export const vectorSore = new SupabaseVectorStore(embeddings, {
   client: supabaseClient,
-  tableName: 'documents',
-  queryName: 'match_documents',
+  tableName: 'documents_nrw',
+  queryName: 'match_documents_nrw',
 });
 export const retriever = vectorSore.asRetriever();
