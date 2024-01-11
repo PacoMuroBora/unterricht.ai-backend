@@ -3,6 +3,8 @@ import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { sbApiKey, sbUrl, openAIApiKey } from './config.js';
 
+console.log({ sbApiKey, sbUrl, openAIApiKey })
+
 export const supabaseClient = createClient(sbUrl, sbApiKey);
 
 const embeddings = new OpenAIEmbeddings({ openAIApiKey });

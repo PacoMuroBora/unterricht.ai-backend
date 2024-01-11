@@ -13,6 +13,10 @@ const router = express.Router();
 
 const llm = new ChatOpenAI({ openAIApiKey, temperature: 1 });
 
+router.get("/",  async (req, res) => {
+  res.json({ msg: 'sdfysf' });
+})
+
 router.post('/prompt', async (req, res) => {
   const { prompt } = req.body;
 
