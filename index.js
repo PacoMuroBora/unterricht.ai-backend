@@ -5,6 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import authService from './api/auth.js';
 import filesService from './api/files-service.js';
+import aiService from './api/ai-service.js';
 import morgan from 'morgan';
 
 const __dirname = path.resolve();
@@ -37,7 +38,7 @@ app.get('/api/data', (req, res) => {
 
 app.use('/api/auth', authService);
 app.use('/api/files', filesService);
-// app.use('/api/ai', aiService);
+app.use('/api/ai', aiService);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
