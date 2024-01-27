@@ -23,6 +23,8 @@ coverage
 public/assets
 import/*
 
+uploads/
+
 /cypress/videos/
 /cypress/screenshots/
 
