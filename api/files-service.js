@@ -3,7 +3,6 @@ import multer from 'multer';
 import fs from 'fs';
 
 const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
-
 const router = express.Router();
 
 router.post('/upload', upload.single('file'), async (req, res) => {
@@ -43,6 +42,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     // Remove the uploaded file
     fs.unlinkSync(path);
+
+    // TODO pass link to new uploaded file to AI service to generate embeddings
+    // TODO link new embeddings table to the user
 
     res.status(200).json({ message: 'File uploaded successfully' });
   } catch (error) {
