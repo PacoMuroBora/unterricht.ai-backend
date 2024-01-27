@@ -1,16 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
-import {
-  RecursiveCharacterTextSplitter,
-  CharacterTextSplitter,
-} from 'langchain/text_splitter';
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { supabaseClient } from '../utils/supabase.js';
-import { openAIApiKey } from '../utils/config.js';
 
 const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
 
@@ -23,7 +13,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     // Access the uploaded file details
-    const { originalname, mimetype, size, path } = req.file;
+    const { originalname, mimetype, size, path, buffer } = req.file;
 
     // Check file type
     if (!['text/plain', 'application/pdf'].includes(mimetype)) {
@@ -34,11 +24,22 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     console.log('File Details:', { originalname, mimetype, size, path });
 
-    if (mimetype === 'text/plain') {
-      await uploadText(path);
-    } else if (mimetype === 'application/pdf') {
-      await uploadPDF(path, 'documents_2');
+    // Upload file to Supabase Storage
+    const { data: fileData, error: fileError } = await supabase.storage
+      .from('context_uploads')
+      .upload(`user_${req.user.id}/${originalname}`, buffer);
+
+    if (fileError) {
+      throw fileError;
     }
+
+    // Update the 'uploaded_docs' array in the 'profiles' table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        uploaded_docs: supabase.sql`array_append(uploaded_docs, ${fileData[0].id})`,
+      })
+      .eq('user_id', req.user.id);
 
     // Remove the uploaded file
     fs.unlinkSync(path);
@@ -49,56 +50,5 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-const splitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 500,
-  chunkOverlap: 50,
-});
-
-async function uploadText(path, tableName = 'documents') {
-  try {
-    const loader = new TextLoader(path);
-    const output = await loader.loadAndSplit(
-      new CharacterTextSplitter({
-        separator: ['\n\n', '\n', '. ', ' '],
-        chunkSize: 1000,
-        chunkOverlap: 100,
-      })
-    );
-    const supa = await SupabaseVectorStore.fromDocuments(
-      output,
-      new OpenAIEmbeddings({ openAIApiKey }),
-      { client: supabaseClient, tableName }
-    );
-    console.log(supa);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-export async function uploadPDF(path, tableName = 'documents') {
-  try {
-    const loader = new PDFLoader(path, {
-      splitPages: false,
-    });
-
-    const output = await loader.loadAndSplit(
-      new CharacterTextSplitter({
-        separator: '. ', // TODO better separator?
-        chunkSize: 1000,
-        chunkOverlap: 100,
-      })
-    );
-
-    const supa = await SupabaseVectorStore.fromDocuments(
-      output,
-      new OpenAIEmbeddings({ openAIApiKey }),
-      { client: supabaseClient, tableName }
-    );
-    console.log(supa);
-  } catch (e) {
-    console.log(e);
-  }
-}
 
 export default router;
