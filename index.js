@@ -39,11 +39,6 @@ app.use('/api/auth', authService);
 app.use('/api/files', filesService);
 // app.use('/api/ai', aiService);
 
-// app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
-// });
-
-// Export the handler function
-export default async function handler(req, res) {
-  await app(req, res);
-}
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
