@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as s,a as c}from"./entry.f7221c73.js";const o={},n={class:"flex justify-center items-center w-full flex-col"},a=c("h2",{class:"text-5xl font-bold mb-8 text-white my-8"}," COMING SOON ",-1),_=[a];function r(l,f){return s(),t("div",n,_)}const d=e(o,[["render",r]]);export{d as default};
