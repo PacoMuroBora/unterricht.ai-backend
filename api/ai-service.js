@@ -8,14 +8,19 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/prompt', async (req, res) => {
-  const { prompt } = req.body;
+  try {
+    const { prompt } = req.body;
 
-  const response = await axios.post(
-    'https://unterricht-ai-backend-wfw8.onrender.com/prompt',
-    { query: prompt }
-  );
+    const response = await axios.post(
+      'https://unterricht-ai-backend-wfw8.onrender.com/prompt',
+      { query: prompt }
+    );
 
-  res.json({ response: response.data });
+    res.json({ response: response.data });
+  } catch (e) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export default router;
