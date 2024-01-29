@@ -59,12 +59,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // }
 
     // Log the type of buffer
-    const buffer = fs.readFileSync(path);
+    const fileStream = fs.createReadStream(path);
+    // const buffer = fs.readFileSync(path);
 
     // Upload file to Supabase Storage fileData: {path, id, fullPath}
     const { data: fileData, error: fileError } = await supabaseClient.storage
       .from('context_uploads')
-      .upload(`user_${req.user.id}/${title}.${fileExtension}`, buffer);
+      .upload(`user_${req.user.id}/${title}.${fileExtension}`, fileStream, {
+        duplex: 'half',
+        contentType: 'application/octet-stream',
+      });
 
     if (fileError) {
       throw fileError;
@@ -92,8 +96,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       throw contextRelationError;
     }
 
-    const res = await axios.post(`${aiBackendUrl}/upload`, buffer, {
-      'Content-Type': mimetype,
+    const res = await axios.post(`${aiBackendUrl}/upload`, fileStream, {
+      'Content-Type': 'application/octet-stream',
+      maxContentLength: Infinity, // Set to Infinity to handle large files
+      maxBodyLength: Infinity,
+      responseType: 'stream', // Set the responseType to 'stream'
+      duplex: 'half', // Set duplex to true for Node.js readable stream
     });
 
     const { vector_store_ids } = res.data;
