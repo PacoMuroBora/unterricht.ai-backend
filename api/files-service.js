@@ -80,7 +80,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             title,
             description,
             object_id: fileId,
-            embeddings_table: null,
+            embeddings_table: 'vector_store', // TODO not hardcoded
           },
         ],
         {
