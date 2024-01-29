@@ -3,10 +3,6 @@ import axios from 'axios';
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  res.json({ msg: 'sdfysf' });
-});
-
 router.post('/prompt', async (req, res) => {
   try {
     const { prompt } = req.body;
