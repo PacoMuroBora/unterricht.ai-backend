@@ -5,7 +5,7 @@ const router = express.Router();
 
 const aiBackendUrl = 'http://unterricht-ai-service:10000';
 
-app.get('/ping', async (req, res) => {
+router.get('/ping', async (req, res) => {
   try {
     const response = await axios.get(`${aiBackendUrl}`);
     res.json({ response: response.data });
