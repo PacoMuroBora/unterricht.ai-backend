@@ -17,11 +17,7 @@ router.get('/ping', async (req, res) => {
 
 router.post('/prompt', async (req, res) => {
   try {
-    const { prompt } = req.body;
-
-    const response = await axios.post(`${aiBackendUrl}/prompt`, {
-      query: prompt,
-    });
+    const response = await axios.post(`${aiBackendUrl}/prompt`, req.body);
 
     res.json({ response: response.data });
   } catch (e) {
