@@ -8,5 +8,5 @@ export default {
   accessTokenPublicKey: ``,
   refreshTokenPrivateKey: ``,
   refreshTokenPublicKey: ``,
-  aiBackendUrl: 'https://unterricht-ai-backend-wfw8.onrender.com',
+  aiBackendUrl: 'http://unterricht-ai-service:10000',
 };

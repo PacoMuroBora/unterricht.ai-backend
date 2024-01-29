@@ -9,6 +9,8 @@ const router = express.Router();
 
 const testUserId = '2e4ace06-270b-429b-9726-f937261ed293';
 
+const aiBackendUrl = 'http://unterricht-ai-service:10000';
+
 router.post('/upload', upload.single('file'), async (req, res) => {
   let _path;
   try {
@@ -90,10 +92,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // TODO pass link to new uploaded file to AI service to generate embeddings
     // TODO link new embeddings table to the user
 
-    const res = await axios.post(
-      'https://unterricht-ai-backend-wfw8.onrender.com/upload',
-      { supbaseFullPath: fileData.fullPath }
-    );
+    const res = await axios.post(`${aiBackendUrl}/upload`, {
+      supbaseFullPath: fileData.fullPath,
+    });
 
     res.status(200).json({ message: 'File uploaded successfully' });
   } catch (error) {
