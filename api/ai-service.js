@@ -5,6 +5,16 @@ const router = express.Router();
 
 const aiBackendUrl = 'http://unterricht-ai-service:10000';
 
+app.get('/ping', async (req, res) => {
+  try {
+    const response = await axios.get(`${aiBackendUrl}`);
+    res.json({ response: response.data });
+  } catch (e) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/prompt', async (req, res) => {
   try {
     const { prompt } = req.body;
