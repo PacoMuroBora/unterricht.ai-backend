@@ -9,7 +9,7 @@ router.get('/ping', async (req, res) => {
   try {
     const response = await axios.get(`${aiBackendUrl}`);
     res.json({ response: response.data });
-  } catch (e) {
+  } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -20,7 +20,7 @@ router.post('/prompt', async (req, res) => {
     const response = await axios.post(`${aiBackendUrl}/prompt`, req.body);
 
     res.json({ response: response.data });
-  } catch (e) {
+  } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
