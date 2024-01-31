@@ -71,6 +71,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       throw fileError;
     }
 
+    const res = await axios.post(`${aiBackendUrl}/upload`, fileData);
+
+    // DEBUG
+    console.log('ai upload response', res.data);
+
+    const { vector_store_ids } = res.data;
+
     const fileId = fileData.id;
     // Create an entry in the "context_relations" table
     const { data: contextRelationData, error: contextRelationError } =
@@ -81,30 +88,23 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             description,
             object_id: fileId,
             embeddings_table: 'vector_store', // TODO not hardcoded
+            vector_store_ids,
           },
         ],
         {
           onConflict: ['id'],
-          merge: ['title', 'description', 'object_id', 'embeddings_table'],
+          merge: [
+            'title',
+            'description',
+            'object_id',
+            'embeddings_table',
+            'vector_store_ids',
+          ],
         }
       );
 
     if (contextRelationError) {
       throw contextRelationError;
-    }
-
-    const res = await axios.post(`${aiBackendUrl}/upload`, fileData);
-
-    const { vector_store_ids } = res.data;
-
-    // update the field embeddings_table in the context_relations table
-    const { data: updateResult, error: updateError } = await supabaseClient
-      .from('context_relations')
-      .update({ vector_store_ids })
-      .eq('object_id', fileId);
-
-    if (updateError) {
-      throw updateError;
     }
 
     res
