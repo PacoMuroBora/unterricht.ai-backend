@@ -26,7 +26,7 @@ app.use(express.json());
 /// serve client
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/ping', (req, res) => {
+app.get(['/ping', '/api/ping', '/api'], (req, res) => {
   res.send('pong');
 });
 
