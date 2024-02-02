@@ -19,7 +19,7 @@ router.post('/prompt', async (req, res) => {
   try {
     const response = await axios.post(`${aiBackendUrl}/prompt`, req.body);
 
-    res.json({ response: response.data });
+    res.json({ response: response });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Internal server error' });
